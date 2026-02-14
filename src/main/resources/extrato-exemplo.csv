@@ -1,0 +1,11 @@
+data,descricao,valor,tipo
+2025-02-01,Salário - Empresa XYZ Ltda,5000.00,ENTRADA
+2025-02-03,Mercado Extra - Compras do Mês,150.50,SAIDA
+2025-02-05,Uber - Corrida para o Centro,25.00,SAIDA
+2025-02-07,Transferência PIX - João Silva,100.00,SAIDA
+2025-02-10,Freelance - Desenvolvimento Web,800.00,ENTRADA
+2025-02-12,Netflix - Assinatura Mensal,39.90,SAIDA
+2025-02-15,Posto Ipiranga - Abastecimento,200.00,SAIDA
+2025-02-18,Reembolso - Despesa Corporativa,150.00,ENTRADA
+2025-02-20,iFood - Jantar,45.00,SAIDA
+2025-02-25,Aluguel - Apartamento 101,1200.00,SAIDA
