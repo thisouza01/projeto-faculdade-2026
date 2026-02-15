@@ -30,7 +30,6 @@ public class Transacao {
     @Column(nullable = false)
     private LocalDateTime dataImportacao;
 
-    @Column(nullable = false)
     private Long idExecucaoJob;
 
     public Long getId() {
