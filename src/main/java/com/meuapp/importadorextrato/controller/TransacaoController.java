@@ -31,4 +31,14 @@ public class TransacaoController {
     public Long contar() {
         return repository.count();
     }
+
+    @GetMapping("/por-categoria/{id}")
+    public List<Transacao> porCategoria(@PathVariable Long id) {
+        return repository.findByCategoriaId(id);
+    }
+
+    @GetMapping("/sem-categoria")
+    public List<Transacao> semCategoria() {
+        return repository.findByCategoriaIsNull();
+    }
 }
