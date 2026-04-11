@@ -1,4 +1,5 @@
 package com.meuapp.importadorextrato.domain.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import com.meuapp.importadorextrato.domain.enums.TipoTransacao;
 import jakarta.persistence.*;
@@ -90,6 +91,7 @@ public class Transacao {
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
+    @JsonIgnoreProperties("transacoes")
     private Categoria categoria;
 
     public Categoria getCategoria() {

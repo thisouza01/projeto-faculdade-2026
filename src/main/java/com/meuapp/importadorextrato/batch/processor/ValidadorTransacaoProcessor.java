@@ -1,9 +1,12 @@
 package com.meuapp.importadorextrato.batch.processor;
 
 import com.meuapp.importadorextrato.domain.dto.TransacaoDTO;
+import com.meuapp.importadorextrato.domain.entity.Categoria;
 import com.meuapp.importadorextrato.domain.entity.Transacao;
 import com.meuapp.importadorextrato.domain.enums.TipoTransacao;
+import com.meuapp.importadorextrato.service.CategorizacaoService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +17,9 @@ import java.time.format.DateTimeParseException;
 
 @Component
 public class ValidadorTransacaoProcessor implements ItemProcessor<TransacaoDTO, Transacao>{
+
+    @Autowired
+    private CategorizacaoService categorizacaoService;
 
     @Override
     public Transacao process(TransacaoDTO dto) throws Exception{
@@ -69,12 +75,15 @@ public class ValidadorTransacaoProcessor implements ItemProcessor<TransacaoDTO, 
             throw new IllegalArgumentException("Tipo inválido! " + dto.getTipo() + ". Use: ENTRADA ou SAIDA", tipoErro);
         }
 
-
         // Preenchimento de campos que não vem no CSV
 
         transacao.setDataImportacao(LocalDateTime.now());
 
         transacao.setIdExecucaoJob(null);
+
+        // Categorização automática
+        Categoria categoria = categorizacaoService.categorizar(dto.getDescricao());
+        transacao.setCategoria(categoria);
 
         return transacao;
     }
