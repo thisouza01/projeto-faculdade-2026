@@ -95,27 +95,29 @@
     <!-- Card de Estatísticas -->
     <div class="card">
         <div class="card-header bg-info text-white">
-            <h5><i class="fas fa-chart-bar"></i> Estatísticas</h5>
+            <h5><i class="fas fa-chart-bar"></i> Estatísticas por Categoria</h5>
+        </div>
+        <div class="card-body">
+            <div class="row" id="cardsCategoria">
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Filtros -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5><i class="fas fa-filter"></i> Filtros</h5>
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalTransacoes">0</div>
-                        <div class="text-muted">Total de Transações</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="stat-number text-success" id="totalEntradas">R$ 0,00</div>
-                        <div class="text-muted">Total Entradas</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="stat-number text-danger" id="totalSaidas">R$ 0,00</div>
-                        <div class="text-muted">Total Saídas</div>
-                    </div>
+                <div class="col-md-6">
+                    <label>Categoria:</label>
+                    <select id="filtroCategoria" class="form-select" onchange="aplicarFiltros()">
+                        <option value="">Todas</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -140,6 +142,7 @@
                         <th>Descrição</th>
                         <th>Valor</th>
                         <th>Tipo</th>
+                        <th>Categoria</th>
                     </tr>
                     </thead>
                     <tbody id="tabelaTransacoes">
@@ -171,7 +174,8 @@
 
     // Carregar transações ao iniciar a página
     document.addEventListener('DOMContentLoaded', function() {
-        carregarTransacoes();
+        carregarCategorias();
+         carregarTransacoes();
     });
 
     // Função: Upload de arquivo
@@ -239,16 +243,15 @@
             const transacoes = await response.json();
 
             if (transacoes.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhuma transação encontrada</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma transação encontrada</td></tr>';
                 return;
             }
 
-            // Ordenar por ID decrescente (mais recentes primeiro)
             transacoes.sort((a, b) => b.id - a.id);
 
-            // Preencher tabela
             tbody.innerHTML = transacoes.map(t => {
                 const tipo = t.tipo || t.tipoTransacao || 'DESCONHECIDO';
+                const categoriaNome = t.categoria ? t.categoria.nome : 'Sem categoria';
                 return `
                     <tr>
                         <td>${t.id}</td>
@@ -256,19 +259,30 @@
                         <td>${t.descricao}</td>
                         <td>${formatarValor(t.valor)}</td>
                         <td><span class="tipo-${tipo.toLowerCase()}">${tipo}</span></td>
+                        <td><span class="badge bg-secondary">${categoriaNome}</span></td>
                     </tr>
                 `;
             }).join('');
 
-            // Atualizar estatísticas
             atualizarEstatisticas(transacoes);
 
+            // SÓ atualiza cards se já foram criados
+            if (document.getElementById('cardsCategoria').children.length > 1) {
+
+            }
+
         } catch (error) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Erro ao carregar transações: ${error.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erro ao carregar transações: ${error.message}</td></tr>`;
         }
     }
 
-    // Função: Atualizar estatísticas
+
+    function atualizarEstatisticas(transacoes) {
+        console.log('Atualizando estatísticas...', transacoes.length);
+        // vazia por enquanto
+    }
+
+    /* Função: Atualizar estatísticas
     function atualizarEstatisticas(transacoes) {
         const total = transacoes.length;
 
@@ -287,6 +301,7 @@
         document.getElementById('totalEntradas').textContent = formatarValor(entradas);
         document.getElementById('totalSaidas').textContent = formatarValor(saidas);
     }
+    */
 
     // Função: Mostrar mensagem
     function mostrarMensagem(texto, tipo) {
@@ -311,6 +326,108 @@
             style: 'currency',
             currency: 'BRL'
         }).format(valor);
+    }
+
+    // Carregar categorias
+    async function carregarCategorias() {
+        try {
+            const response = await fetch(`${API_URL}/categorias`);
+            const categorias = await response.json();
+
+            // Preencher select de filtro
+            const select = document.getElementById('filtroCategoria');
+            categorias.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.nome;
+                select.appendChild(option);
+            });
+
+            // Criar cards
+            const container = document.getElementById('cardsCategoria');
+            container.innerHTML = categorias.map(cat => `
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3>${cat.nome}</h3>
+                            <p class="h4 text-primary" id="total-cat-${cat.id}">R$ 0,00</p>
+                            <small class="text-muted" id="count-cat-${cat.id}">0 transações</small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Card "Sem Categoria"
+            container.innerHTML += `
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h3>Sem Categoria</h3>
+                            <p class="h4 text-secondary" id="total-cat-null">R$ 0,00</p>
+                            <small class="text-muted" id="count-cat-null">0 transações</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('Erro ao carregar categorias:', error);
+        }
+    }
+
+    // Aplicar filtros
+    async function aplicarFiltros() {
+        const categoriaId = document.getElementById('filtroCategoria').value;
+
+        let url = `${API_URL}/transacoes`;
+        if (categoriaId) {
+            url = `${API_URL}/transacoes/por-categoria/${categoriaId}`;
+        }
+
+        const response = await fetch(url);
+        const transacoes = await response.json();
+
+        // Atualizar tabela com transacoes filtradas
+        const tbody = document.getElementById('tabelaTransacoes');
+        transacoes.sort((a, b) => b.id - a.id);
+        tbody.innerHTML = transacoes.map(t => {
+            const tipo = t.tipo || t.tipoTransacao || 'DESCONHECIDO';
+            const categoriaNome = t.categoria ? t.categoria.nome : 'Sem categoria';
+            return `
+                <tr>
+                    <td>${t.id}</td>
+                    <td>${formatarData(t.data)}</td>
+                    <td>${t.descricao}</td>
+                    <td>${formatarValor(t.valor)}</td>
+                    <td><span class="tipo-${tipo.toLowerCase()}">${tipo}</span></td>
+                    <td><span class="badge bg-secondary">${categoriaNome}</span></td>
+                </tr>
+            `;
+        }).join('');
+
+    }
+
+    // Atualizar cards por categoria
+    function atualizarCards(transacoes) {
+    /* TEMPORARIAMENTE DESABILITADO
+        const totaisPorCategoria = {};
+
+        transacoes.forEach(t => {
+            const catId = t.categoria ? t.categoria.id : 'null';
+            if (!totaisPorCategoria[catId]) {
+                totaisPorCategoria[catId] = { total: 0, count: 0 };
+            }
+            totaisPorCategoria[catId].total += t.valor;
+            totaisPorCategoria[catId].count++;
+        });
+
+        Object.entries(totaisPorCategoria).forEach(([catId, dados]) => {
+            const totalEl = document.getElementById(`total-cat-${catId}`);
+            const countEl = document.getElementById(`count-cat-${catId}`);
+            if (totalEl) totalEl.textContent = formatarValor(dados.total);
+            if (countEl) countEl.textContent = `${dados.count} transações`;
+        });
+    */
     }
 </script>
 
