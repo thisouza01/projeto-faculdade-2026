@@ -173,9 +173,9 @@
     const API_URL = 'http://localhost:8080/api';
 
     // Carregar transações ao iniciar a página
-    document.addEventListener('DOMContentLoaded', function() {
-        carregarCategorias();
-         carregarTransacoes();
+    document.addEventListener('DOMContentLoaded', async function() {
+        await carregarCategorias();
+        await carregarTransacoes();
     });
 
     // Função: Upload de arquivo
@@ -265,6 +265,7 @@
             }).join('');
 
             atualizarEstatisticas(transacoes);
+            atualizarCardsCategoria(transacoes);
 
             // SÓ atualiza cards se já foram criados
             if (document.getElementById('cardsCategoria').children.length > 1) {
@@ -407,27 +408,30 @@
 
     }
 
-    // Atualizar cards por categoria
-    function atualizarCards(transacoes) {
-    /* TEMPORARIAMENTE DESABILITADO
-        const totaisPorCategoria = {};
+    // Atualizar totais dos cards de categoria
+    function atualizarCardsCategoria(transacoes) {
+        const totais = {
+            '1': { total: 0, count: 0 },
+            '2': { total: 0, count: 0 },
+            '3': { total: 0, count: 0 },
+            'null': { total: 0, count: 0 }
+        };
 
         transacoes.forEach(t => {
-            const catId = t.categoria ? t.categoria.id : 'null';
-            if (!totaisPorCategoria[catId]) {
-                totaisPorCategoria[catId] = { total: 0, count: 0 };
+            const catId = t.categoria ? String(t.categoria.id) : 'null';
+            if (totais[catId]) {
+                totais[catId].total += t.valor;
+                totais[catId].count++;
             }
-            totaisPorCategoria[catId].total += t.valor;
-            totaisPorCategoria[catId].count++;
         });
 
-        Object.entries(totaisPorCategoria).forEach(([catId, dados]) => {
+        // Atualizar cada card
+        Object.entries(totais).forEach(([catId, dados]) => {
             const totalEl = document.getElementById(`total-cat-${catId}`);
             const countEl = document.getElementById(`count-cat-${catId}`);
             if (totalEl) totalEl.textContent = formatarValor(dados.total);
             if (countEl) countEl.textContent = `${dados.count} transações`;
         });
-    */
     }
 </script>
 
