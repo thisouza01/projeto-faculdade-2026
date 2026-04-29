@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ImportadorExtratoApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ImportadorExtratoApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ImportadorExtratoApplication.class, args);
+    }
 
 }
